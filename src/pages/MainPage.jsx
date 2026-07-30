@@ -90,8 +90,7 @@ const normalizeAiRecommendedBook = (raw, index = 0) => ({
   ...normalizeBook(raw, index),
 
   aiRank:
-    Number(raw?.aiRank ?? raw?.recommendationRank ?? index + 1) ||
-    index + 1,
+    Number(raw?.aiRank ?? raw?.recommendationRank ?? index + 1) || index + 1,
 
   recommendationScore:
     Number(raw?.recommendationScore ?? raw?.basePriorityScore ?? 0) || 0,
@@ -99,10 +98,9 @@ const normalizeAiRecommendedBook = (raw, index = 0) => ({
   popularityScore:
     Number(raw?.popularityScore ?? raw?.aiPopularityScore ?? 0) || 0,
 
-  recommendationLevel:
-    String(raw?.recommendationLevel ?? 'MEDIUM')
-      .trim()
-      .toUpperCase(),
+  recommendationLevel: String(raw?.recommendationLevel ?? 'MEDIUM')
+    .trim()
+    .toUpperCase(),
 
   kdcMain: String(raw?.kdcMain ?? raw?.resolvedKdc ?? '').trim(),
 
@@ -178,54 +176,44 @@ const MainPage = () => {
 
   const [hotTrendError, setHotTrendError] = useState('')
 
-  const loadAiRecommendedBooks = useCallback(
-    async (candidateBooks) => {
-      const candidates = Array.isArray(candidateBooks)
-        ? candidateBooks
-            .filter((book) => book?.isbn13)
-            .slice(0, 20)
-        : []
+  const loadAiRecommendedBooks = useCallback(async (candidateBooks) => {
+    const candidates = Array.isArray(candidateBooks)
+      ? candidateBooks.filter((book) => book?.isbn13).slice(0, 20)
+      : []
 
-      if (candidates.length === 0) {
-        setAiRecommendedBooks([])
-        setAiRecommendedError(
-          'AI 추천에 사용할 인기 대출도서 데이터가 없습니다.',
-        )
-        setAiRecommendedLoading(false)
-        return
-      }
+    if (candidates.length === 0) {
+      setAiRecommendedBooks([])
+      setAiRecommendedError('AI 추천에 사용할 인기 대출도서 데이터가 없습니다.')
+      setAiRecommendedLoading(false)
+      return
+    }
 
-      setAiRecommendedLoading(true)
-      setAiRecommendedError('')
+    setAiRecommendedLoading(true)
+    setAiRecommendedError('')
 
-      try {
-        const data = await getMainAiRecommendedBooks({
-          candidates,
-          limit: 5,
-        })
+    try {
+      const data = await getMainAiRecommendedBooks({
+        candidates,
+        limit: 5,
+      })
 
-        setAiRecommendedBooks(
-          Array.isArray(data)
-            ? data.map(normalizeAiRecommendedBook).slice(0, 5)
-            : [],
-        )
-      } catch (error) {
-        console.error('[MainPage] AI 추천도서 조회 실패:', error)
+      setAiRecommendedBooks(
+        Array.isArray(data)
+          ? data.map(normalizeAiRecommendedBook).slice(0, 5)
+          : [],
+      )
+    } catch (error) {
+      console.error('[MainPage] AI 추천도서 조회 실패:', error)
 
-        setAiRecommendedBooks([])
+      setAiRecommendedBooks([])
 
-        setAiRecommendedError(
-          getErrorMessage(
-            error,
-            'AI 추천도서를 불러오지 못했습니다.',
-          ),
-        )
-      } finally {
-        setAiRecommendedLoading(false)
-      }
-    },
-    [],
-  )
+      setAiRecommendedError(
+        getErrorMessage(error, 'AI 추천도서를 불러오지 못했습니다.'),
+      )
+    } finally {
+      setAiRecommendedLoading(false)
+    }
+  }, [])
 
   const loadPopularBooks = useCallback(async () => {
     setPopularLoading(true)
@@ -236,9 +224,7 @@ const MainPage = () => {
         limit: 20,
       })
 
-      const normalizedBooks = Array.isArray(data)
-        ? data.map(normalizeBook)
-        : []
+      const normalizedBooks = Array.isArray(data) ? data.map(normalizeBook) : []
 
       setPopularBooks(normalizedBooks)
 
@@ -469,18 +455,11 @@ const MainPage = () => {
               action={
                 <button
                   type="button"
-                  onClick={() =>
-                    loadAiRecommendedBooks(popularBooks)
-                  }
-                  disabled={
-                    aiRecommendedLoading ||
-                    popularBooks.length === 0
-                  }
+                  onClick={() => loadAiRecommendedBooks(popularBooks)}
+                  disabled={aiRecommendedLoading || popularBooks.length === 0}
                   className="border-2 border-black bg-purple-100 px-4 py-2 text-sm font-black shadow-[3px_3px_0_0] shadow-black transition hover:translate-x-0.75 hover:translate-y-0.75 hover:shadow-none disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {aiRecommendedLoading
-                    ? 'AI 분석 중...'
-                    : 'AI 추천 다시 분석'}
+                  {aiRecommendedLoading ? 'AI 분석 중...' : 'AI 추천 다시 분석'}
                 </button>
               }
             />
@@ -492,9 +471,7 @@ const MainPage = () => {
             {!aiRecommendedLoading && aiRecommendedError && (
               <ErrorPanel
                 message={aiRecommendedError}
-                onRetry={() =>
-                  loadAiRecommendedBooks(popularBooks)
-                }
+                onRetry={() => loadAiRecommendedBooks(popularBooks)}
               />
             )}
 
@@ -807,10 +784,7 @@ const AI_RECOMMENDATION_LEVEL_INFO = {
   },
 }
 
-const AiRecommendedBookGrid = ({
-  books,
-  onOpenBook,
-}) => (
+const AiRecommendedBookGrid = ({ books, onOpenBook }) => (
   <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
     {books.map((book, index) => (
       <AiRecommendedBookCard
@@ -822,14 +796,10 @@ const AiRecommendedBookGrid = ({
   </div>
 )
 
-const AiRecommendedBookCard = ({
-  book,
-  onOpen,
-}) => {
+const AiRecommendedBookCard = ({ book, onOpen }) => {
   const levelInfo =
-    AI_RECOMMENDATION_LEVEL_INFO[
-      book.recommendationLevel
-    ] || AI_RECOMMENDATION_LEVEL_INFO.MEDIUM
+    AI_RECOMMENDATION_LEVEL_INFO[book.recommendationLevel] ||
+    AI_RECOMMENDATION_LEVEL_INFO.MEDIUM
 
   return (
     <article className="group flex h-full flex-col border-2 border-black bg-purple-50 p-4 shadow-[4px_4px_0_0] shadow-black transition hover:-translate-y-1 hover:bg-yellow-50">
@@ -860,9 +830,7 @@ const AiRecommendedBookCard = ({
 
         <div className="mt-4 grid grid-cols-2 border-2 border-black bg-white text-center">
           <div className="border-r-2 border-black px-2 py-3">
-            <p className="text-[10px] font-black text-gray-500">
-              AI 추천도
-            </p>
+            <p className="text-[10px] font-black text-gray-500">AI 추천도</p>
 
             <p className="mt-1 text-lg font-black text-purple-800">
               {book.recommendationScore.toFixed(1)}
@@ -870,9 +838,7 @@ const AiRecommendedBookCard = ({
           </div>
 
           <div className="px-2 py-3">
-            <p className="text-[10px] font-black text-gray-500">
-              AI 인기도
-            </p>
+            <p className="text-[10px] font-black text-gray-500">AI 인기도</p>
 
             <p className="mt-1 text-lg font-black text-blue-800">
               {book.popularityScore.toFixed(1)}
